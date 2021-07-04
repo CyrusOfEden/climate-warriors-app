@@ -1,24 +1,30 @@
-import { ChakraProvider, Container, Grid, theme } from "@chakra-ui/react"
+import { Grid } from "@chakra-ui/react"
 import * as React from "react"
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom"
 
-import { LandingPage } from "./screens/LandingPage"
+import { HowItWorks } from "./screens/HowItWorks"
+import { Vault } from "./screens/Vault"
+import { Welcome } from "./screens/Welcome"
+import { ThemeProvider } from "./theme/ThemeProvider"
 
 export const App: React.FC = () => {
   return (
-    <ChakraProvider theme={theme}>
+    <ThemeProvider>
       <Router>
-        <Grid minH="100vh" px={3} py={16}>
-          <Container maxW="container.md">
-            <Switch>
-              <Route path="/">
-                <LandingPage />
-              </Route>
-              <Route path="/app"></Route>
-            </Switch>
-          </Container>
+        <Grid minH="100vh" px={8} py={16} backgroundColor="gray.50">
+          <Switch>
+            <Route path="/welcome">
+              <Welcome />
+            </Route>
+            <Route path="/how-it-works">
+              <HowItWorks />
+            </Route>
+            <Route path="/vault">
+              <Vault />
+            </Route>
+          </Switch>
         </Grid>
       </Router>
-    </ChakraProvider>
+    </ThemeProvider>
   )
 }

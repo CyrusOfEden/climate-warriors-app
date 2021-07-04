@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@ahooksjs/use-url-state": "^2.5.7",
+    "@chakra-ui/icons": "^1.0.13",
     "@chakra-ui/react": "^1.0.0",
     "@emotion/react": "^11.0.0",
     "@emotion/styled": "^11.0.0",
@@ -15,7 +16,8 @@
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
     "ahooks": "^2.10.6",
-    "framer-motion": "^4.0.0",
+    "ethers": "^5.4.1",
+    "framer-motion": "^4.1.17",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-icons": "^3.0.0",
@@ -25,6 +27,8 @@
     "react-scripts": "4.0.3",
     "typescript": "^3.9.5",
     "web-vitals": "^0.2.2",
+    "web3": "^1.4.0",
+    "web3modal": "^1.9.3",
     "windups": "^1.1.9"
   },
   "scripts": {
