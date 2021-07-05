@@ -7,6 +7,8 @@ import { Vault } from "./screens/Vault"
 import { Welcome } from "./screens/Welcome"
 import { ThemeProvider } from "./theme/ThemeProvider"
 
+(window as any).global = window;
+
 export const App: React.FC = () => {
   return (
     <ThemeProvider>

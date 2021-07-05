@@ -1,3 +1,6 @@
+import { ethers } from "ethers";
+
+
 import { ArrowForwardIcon, ExternalLinkIcon } from "@chakra-ui/icons"
 import {
   Link as Anchor,
@@ -203,7 +206,7 @@ const CollectNifties: React.FC<Callback> = ({ onFinished }) => {
           <Heading color="green.800" textAlign="center">
             <Sparkles>Collect nifties</Sparkles>
           </Heading>
-          <FadeUpBox delay={0.5} y={10}>
+          <FadeUpBox delay={0} y={10}>
             <VStack>
               <Text fontSize="xl" color="gray.700" textAlign="center">
                 Earn exclusive NFTs from project partners as you save money.
@@ -223,7 +226,7 @@ const CollectNifties: React.FC<Callback> = ({ onFinished }) => {
             </VStack>
           </FadeUpBox>
           {showCTA && (
-            <FadeUpBox delay={3} y={20}>
+            <FadeUpBox delay={0} y={20}>
               <Button
                 colorScheme="green"
                 mt={4}
@@ -255,6 +258,9 @@ const NextStep: React.FC = () => {
           size="lg"
           rightIcon={<ArrowForwardIcon />}
           _hover={{ textDecoration: "none" }}
+          onClick={() => {
+            connect()
+          }}
         >
           Connect Wallet
         </Button>
@@ -284,3 +290,11 @@ export const HowItWorks: React.FC = () => {
     </Container>
   )
 }
+
+const connect = async () => {
+  // A Web3Provider wraps a standard Web3 provider, which is
+// what Metamask injects as window.ethereum into each page
+await (window as any).ethereum.request({ method: 'eth_requestAccounts' })
+const provider = new ethers.providers.Web3Provider((window as any).ethereum);
+
+};

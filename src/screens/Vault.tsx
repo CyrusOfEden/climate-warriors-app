@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import { ArrowDownIcon, ArrowUpIcon, CloseIcon } from "@chakra-ui/icons"
 import {
   Alert,
@@ -26,7 +27,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react"
 import { useSetState } from "ahooks"
-import React, { useRef } from "react"
+import React, { useRef, useState } from "react"
 
 import { ProgressStatCard } from "../components/ProgressStatCard"
 
@@ -49,13 +50,13 @@ export const Vault: React.FC = () => {
         title: "USDC Locked",
         id: "usdc",
         limit: 50000,
-        value: 14421,
+        value: 0,
       },
       mco2: {
         title: "Tons CO2",
         id: "mco2",
-        limit: 1000,
-        value: 132,
+        limit: 25,
+        value: 0,
       },
     },
   })
@@ -168,6 +169,8 @@ interface ActionModalProps
 const DepositModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
   const depositAmountRef = useRef(null)
 
+  const [amount, setAmount] = useState<number>(100)
+
   return (
     <AlertDialog
       leastDestructiveRef={depositAmountRef}
@@ -201,34 +204,24 @@ const DepositModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
 
           <AlertDialogBody>
             <HStack>
-              <NumberInput precision={2} step={10} flex={2} size="md">
+              <NumberInput precision={0} step={1} flex={2} size="md" value={amount}
+                onChange={(_, number) => setAmount(number)}>
                 <NumberInputField
-                  ref={depositAmountRef}
+                  ref={depositAmountRef.current}
                   borderColor="gray.300"
                   _focus={{ borderColor: "green.500" }}
                 />
-                <NumberInputStepper
-                  borderColor="gray.300"
-                  _focus={{ borderColor: "green.500" }}
-                >
-                  <NumberIncrementStepper
-                    borderColor="gray.300"
-                    _focus={{ borderColor: "green.500" }}
-                  />
-                  <NumberDecrementStepper
-                    borderColor="gray.300"
-                    _focus={{ borderColor: "green.500" }}
-                  />
-                </NumberInputStepper>
               </NumberInput>
+              
               <Button
                 flex={1}
                 colorScheme="green"
                 onClick={() => {
+                  deposit(amount)
                   setState((state) => ({
                     ...state,
                     wallet: {
-                      deposited: 150,
+                      deposited: amount,
                       daily: { mco2: 0.0203, usdc: 1.34 },
                     },
                   }))
@@ -247,6 +240,8 @@ const DepositModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
 
 const WithdrawModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
   const cancelWithdrawRef = useRef(null)
+
+  const [amount, setAmount] = useState<number>(100)
 
   return (
     <AlertDialog
@@ -282,26 +277,16 @@ const WithdrawModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
 
           <AlertDialogBody>
             <HStack>
-              <NumberInput precision={2} step={10} flex={2} size="md">
+              <NumberInput precision={0} step={10} flex={2} size="md" value={amount}
+                onChange={(_, number) => setAmount(number)}>
                 <NumberInputField
                   borderColor="gray.300"
                   _focus={{ borderColor: "green.500" }}
                 />
-                <NumberInputStepper
-                  borderColor="gray.300"
-                  _focus={{ borderColor: "green.500" }}
-                >
-                  <NumberIncrementStepper
-                    borderColor="gray.300"
-                    _focus={{ borderColor: "green.500" }}
-                  />
-                  <NumberDecrementStepper
-                    borderColor="gray.300"
-                    _focus={{ borderColor: "green.500" }}
-                  />
-                </NumberInputStepper>
               </NumberInput>
-              <Button flex={1} colorScheme="purple">
+              <Button flex={1} colorScheme="purple" onClick={() => {
+            withdraw(amount)
+          }}>
                 Withdraw
               </Button>
             </HStack>
@@ -310,4 +295,580 @@ const WithdrawModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
       </AlertDialogOverlay>
     </AlertDialog>
   )
+}
+
+// You can also use an ENS name for the contract address
+const usdcAddress = "0xe22da380ee6B445bb8273C81944ADEB6E8450422";
+const climateWarriorsAddress = "0xFC5051C560e8C311aF3dA1CD51aA4B462f9aD977";
+// constant
+const MAX_UINT256 = ethers.constants.MaxUint256;
+// The ERC-20 Contract ABI, which is a common contract interface
+// for tokens (this is the Human-Readable ABI format)
+const usdcAbi = [
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_spender",
+                "type": "address"
+            },
+            {
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "approve",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_from",
+                "type": "address"
+            },
+            {
+                "name": "_to",
+                "type": "address"
+            },
+            {
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "transferFrom",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_owner",
+                "type": "address"
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+            {
+                "name": "balance",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_to",
+                "type": "address"
+            },
+            {
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "transfer",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_owner",
+                "type": "address"
+            },
+            {
+                "name": "_spender",
+                "type": "address"
+            }
+        ],
+        "name": "allowance",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "fallback"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "name": "owner",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "spender",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Approval",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Transfer",
+        "type": "event"
+    }
+];
+
+const climateWarriorsAbi = [
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "Deposit",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_donated",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_from",
+        "type": "address"
+      }
+    ],
+    "name": "Funding",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_earned",
+        "type": "uint256"
+      }
+    ],
+    "name": "Withdraw",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "_owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "account",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "deposited",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalBalance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "earned",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "donated",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reserveIndex",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "checkAccount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "checkCarbonCredits",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "deposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "generosity",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawToBuyCarbonCredits",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_balance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_interestRate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_generosity",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawalCalculator",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
+
+const deposit = (amount) => {
+    // A Web3Provider wraps a standard Web3 provider, which is
+// what Metamask injects as window.ethereum into each page
+const provider = new ethers.providers.Web3Provider((window as any).ethereum)
+
+// The Metamask plugin also allows signing transactions to
+// send ether and pay to change state within the blockchain.
+// For this, you need the account signer...
+const signer = provider.getSigner()
+console.log(amount)
+// The Contract object
+const usdcContract = new ethers.Contract(usdcAddress, usdcAbi, signer);
+const usdcContractPromise = usdcContract.approve(climateWarriorsAddress, MAX_UINT256);
+
+usdcContractPromise.then(transaction => {
+  console.log(transaction);
+});
+
+const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, signer);
+const ClimateWarriorsPromise = climateWarriorsContract.deposit(1000000*amount);
+
+ClimateWarriorsPromise.then(transaction => {
+  console.log(transaction);
+});
+
+}
+
+const withdraw = (amount) => {
+  // A Web3Provider wraps a standard Web3 provider, which is
+// what Metamask injects as window.ethereum into each page
+const provider = new ethers.providers.Web3Provider((window as any).ethereum)
+
+// The Metamask plugin also allows signing transactions to
+// send ether and pay to change state within the blockchain.
+// For this, you need the account signer...
+const signer = provider.getSigner()
+console.log(amount);
+
+const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, signer);
+const ClimateWarriorsPromise = climateWarriorsContract.withdraw(1000000*amount);
+
+ClimateWarriorsPromise.then(transaction => {
+console.log(transaction);
+});
+
 }
