@@ -14,8 +14,9 @@ import {
 } from "@chakra-ui/react"
 import { useMount } from "ahooks"
 import { useBoolean } from "ahooks"
-import React from "react"
-import { Link } from "react-router-dom"
+import React, { useCallback } from "react"
+import { useHistory } from "react-router-dom"
+import Web3Modal from "web3modal"
 import { Pace, Pause, WindupChildren } from "windups"
 
 import { FadeLeftBox, FadeRightBox, FadeUpBox } from "../components/Motion"
@@ -23,6 +24,28 @@ import Sparkles from "../components/Sparkles"
 import { WatercolorFoliage } from "../components/WatercolorFoliage"
 import { useStepForm } from "../hooks/useStepForm"
 import { scrollToBottom } from "../lib/browser"
+
+export const HowItWorks: React.FC = () => {
+  const { step, nextStep } = useStepForm(0, 3)
+
+  return (
+    <Container
+      maxW="container.lg"
+      backgroundColor="white"
+      boxShadow="md"
+      rounded="xl"
+      p={16}
+      pt={32}
+    >
+      <VStack align="initial" spacing={16}>
+        <MakeMoney onFinished={nextStep} />
+        {step > 0 && <DefendThePlanet onFinished={nextStep} />}
+        {step > 1 && <CollectNifties onFinished={nextStep} />}
+        {step > 2 && <ConnectWallet />}
+      </VStack>
+    </Container>
+  )
+}
 
 interface Callback {
   onFinished: () => void
@@ -241,16 +264,27 @@ const CollectNifties: React.FC<Callback> = ({ onFinished }) => {
     </HStack>
   )
 }
+const ConnectWallet: React.FC = () => {
+  const history = useHistory()
 
-const NextStep: React.FC = () => {
+  const connectWallet = useCallback(async () => {
+    const web3Modal = new Web3Modal({
+      network: "mainnet", // optional
+      cacheProvider: true, // optional
+      providerOptions: {}, // required
+    })
+    const provider = await web3Modal.connect()
+    debugger
+    history.push("/vault")
+  }, [])
+
   useMount(scrollToBottom)
 
   return (
     <VStack py={32}>
       <FadeUpBox delay={0}>
         <Button
-          as={Link}
-          to="/vault"
+          onClick={connectWallet}
           colorScheme="green"
           size="lg"
           rightIcon={<ArrowForwardIcon />}
@@ -260,27 +294,5 @@ const NextStep: React.FC = () => {
         </Button>
       </FadeUpBox>
     </VStack>
-  )
-}
-
-export const HowItWorks: React.FC = () => {
-  const { step, nextStep } = useStepForm(0, 3)
-
-  return (
-    <Container
-      maxW="container.lg"
-      backgroundColor="white"
-      boxShadow="md"
-      rounded="xl"
-      p={16}
-      pt={32}
-    >
-      <VStack align="initial" spacing={16}>
-        <MakeMoney onFinished={nextStep} />
-        {step > 0 && <DefendThePlanet onFinished={nextStep} />}
-        {step > 1 && <CollectNifties onFinished={nextStep} />}
-        {step > 2 && <NextStep />}
-      </VStack>
-    </Container>
   )
 }
