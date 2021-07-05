@@ -276,7 +276,7 @@ const ConnectWallet: React.FC = () => {
     const provider = await web3Modal.connect()
     debugger
     history.push("/vault")
-  }, [])
+  }, [history])
 
   useMount(scrollToBottom)
 
