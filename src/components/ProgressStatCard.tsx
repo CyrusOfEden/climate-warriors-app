@@ -1,5 +1,15 @@
-import { Box, Flex, FlexProps, Progress, Stack, Text } from "@chakra-ui/react"
+import {
+  Box,
+  Flex,
+  FlexProps,
+  Progress,
+  Stack,
+  Tag,
+  Text,
+} from "@chakra-ui/react"
 import * as React from "react"
+
+import Sparkles from "./Sparkles"
 
 export interface StatCardData {
   id: string
@@ -13,11 +23,13 @@ export interface StatCardData {
 }
 
 export interface ProgressStatCardProps extends FlexProps {
+  boost: number
   data: StatCardData
 }
 
 export const ProgressStatCard: React.FC<ProgressStatCardProps> = ({
   data,
+  boost,
   ...rest
 }) => {
   const { id, title, limit, value, formattedData } = data
@@ -28,7 +40,7 @@ export const ProgressStatCard: React.FC<ProgressStatCardProps> = ({
   return (
     <Flex direction="column" overflow="hidden" w="100%" {...rest}>
       <Box id={id} srOnly>
-        {value} out of {limit} {title} used
+        {value} out of {limit} {title} used, boosted by {boost}
       </Box>
       <Box flex="1" as="dl" color="gray.500" mb={4}>
         <Text as="dt" fontSize="sm" fontWeight="medium">
@@ -57,6 +69,11 @@ export const ProgressStatCard: React.FC<ProgressStatCardProps> = ({
             <Box srOnly>out of</Box>
             <Text ps="1">{_limit}</Text>
           </Flex>
+          {boost !== 0 && (
+            <Tag size="md" colorScheme="orange">
+              <Sparkles>+{boost} / day</Sparkles>
+            </Tag>
+          )}
         </Stack>
       </Box>
       <Progress

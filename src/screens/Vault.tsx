@@ -25,36 +25,57 @@ import {
   VStack,
   useDisclosure,
 } from "@chakra-ui/react"
+import { useSetState } from "ahooks"
 import React, { useRef } from "react"
 
 import { ProgressStatCard } from "../components/ProgressStatCard"
 
+interface VaultState {
+  global: any
+  wallet: any
+}
+
 export const Vault: React.FC = () => {
+  const [state, setState] = useSetState<VaultState>({
+    wallet: {
+      deposited: 0,
+      daily: {
+        mco2: 0.0,
+        usdc: 0.0,
+      },
+    },
+    global: {
+      usdc: {
+        title: "USDC Locked",
+        id: "usdc",
+        limit: 50000,
+        value: 14421,
+      },
+      mco2: {
+        title: "Tons CO2",
+        id: "mco2",
+        limit: 1000,
+        value: 132,
+      },
+    },
+  })
+
+  console.log(state)
+
   return (
     <Container maxW="container.lg">
       <SimpleGrid columns={2} spacing={8}>
-        <GlobalFundraiseProgress />
-        <WalletDepositDetails />
+        <GlobalFundraiseProgress {...state} />
+        <DepositActions {...state.wallet} setState={setState} />
       </SimpleGrid>
     </Container>
   )
 }
 
-const GlobalFundraiseProgress: React.FC = () => {
-  const usdcStats = {
-    title: "USDC Locked",
-    id: "usdc",
-    limit: 50000,
-    value: 14421,
-  }
-
-  const mco2Stats = {
-    title: "Tons CO2",
-    id: "mco2",
-    limit: 1000,
-    value: 132,
-  }
-
+const GlobalFundraiseProgress: React.FC<any> = ({
+  global: { mco2, usdc },
+  wallet: { daily },
+}) => {
   return (
     <VStack
       w="100%"
@@ -71,14 +92,14 @@ const GlobalFundraiseProgress: React.FC = () => {
       <Heading color="green.800" size="lg">
         Climate Warriors Stats
       </Heading>
-      <ProgressStatCard data={mco2Stats} />
+      <ProgressStatCard data={mco2} boost={daily.mco2} />
       <Box backgroundColor="gray.100" height="2px" width="100%" rounded="lg" />
-      <ProgressStatCard data={usdcStats} />
+      <ProgressStatCard data={usdc} boost={daily.usdc} />
     </VStack>
   )
 }
 
-const WalletDepositDetails: React.FC = () => {
+const DepositActions: React.FC<any> = ({ deposited, setState }) => {
   const { isOpen: isDepositModelOpen, onToggle: toggleDepositModal } =
     useDisclosure()
 
@@ -87,8 +108,8 @@ const WalletDepositDetails: React.FC = () => {
 
   return (
     <VStack
-      align="start"
-      justify="start"
+      align="center"
+      justify="center"
       backgroundColor="white"
       borderColor="gray.100"
       borderWidth={1}
@@ -98,22 +119,18 @@ const WalletDepositDetails: React.FC = () => {
       rounded="lg"
       spacing={4}
     >
-      <Heading color="green.800" size="lg">
-        Your Deposit Rates
-      </Heading>
-      <HStack>
-        <Tag colorScheme="green">0.0012 MCO2 / day</Tag>
-        <Tag>0.1 USDC / day</Tag>
-      </HStack>
-      <Spacer maxH={2} />
-      <Heading color="green.600" size="sm">
-        Next quest:
-      </Heading>
-      <Alert status="warning" rounded="md" p={4}>
-        <AlertIcon />
-        Deposit 100 USDC
-      </Alert>
-      <Spacer maxH={2} />
+      {deposited < 100 && (
+        <>
+          <Spacer maxH={2} />
+          <Heading color="green.600" size="sm">
+            Next quest:
+          </Heading>
+          <Alert status="warning" rounded="md" p={4}>
+            <AlertIcon />
+            Deposit 100 USDC
+          </Alert>
+        </>
+      )}
       <Heading color="green.600" size="sm" fontWeight="normal">
         Adjust your position
       </Heading>
@@ -128,6 +145,7 @@ const WalletDepositDetails: React.FC = () => {
         <DepositModal
           isOpen={isDepositModelOpen}
           onClose={toggleDepositModal}
+          setState={setState}
         />
         <Button rightIcon={<ArrowDownIcon />} onClick={toggleWithdrawModal}>
           Withdraw
@@ -135,6 +153,7 @@ const WalletDepositDetails: React.FC = () => {
         <WithdrawModal
           isOpen={isWithdrawModelOpen}
           onClose={toggleWithdrawModal}
+          setState={setState}
         />
       </HStack>
     </VStack>
@@ -142,9 +161,11 @@ const WalletDepositDetails: React.FC = () => {
 }
 
 interface ActionModalProps
-  extends Omit<AlertDialogProps, "leastDestructiveRef" | "children"> {}
+  extends Omit<AlertDialogProps, "leastDestructiveRef" | "children"> {
+  setState: any
+}
 
-const DepositModal: React.FC<ActionModalProps> = (props) => {
+const DepositModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
   const depositAmountRef = useRef(null)
 
   return (
@@ -200,7 +221,20 @@ const DepositModal: React.FC<ActionModalProps> = (props) => {
                   />
                 </NumberInputStepper>
               </NumberInput>
-              <Button flex={1} colorScheme="green">
+              <Button
+                flex={1}
+                colorScheme="green"
+                onClick={() => {
+                  setState((state) => ({
+                    ...state,
+                    wallet: {
+                      deposited: 150,
+                      daily: { mco2: 0.0203, usdc: 1.34 },
+                    },
+                  }))
+                  props.onClose()
+                }}
+              >
                 Deposit
               </Button>
             </HStack>
@@ -211,7 +245,7 @@ const DepositModal: React.FC<ActionModalProps> = (props) => {
   )
 }
 
-const WithdrawModal: React.FC<ActionModalProps> = (props) => {
+const WithdrawModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
   const cancelWithdrawRef = useRef(null)
 
   return (

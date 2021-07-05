@@ -64,11 +64,11 @@ const MakeMoney: React.FC<Callback> = ({ onFinished }) => {
           <FadeUpBox delay={3} y={20}>
             <VStack mt={4}>
               <Text color="gray.500" textAlign="center">
-                We lend your USDC using AAVE — a decentralized lending protocol
-                — to earn interest.{" "}
+                Lend your USDC using the most secure lending protocol in all of
+                DeFi.
               </Text>
               <Button size="xs" onClick={onToggle}>
-                {isOpen ? "Alright" : "AAVE?"}
+                {isOpen ? "Close" : "Learn more about Aave"}
               </Button>
               <Collapse in={isOpen}>
                 <Box bg="gray.50" p={4} rounded="md" maxW="md">
@@ -112,6 +112,7 @@ const MakeMoney: React.FC<Callback> = ({ onFinished }) => {
 
 const DefendThePlanet: React.FC<Callback> = ({ onFinished }) => {
   const { isOpen, onToggle } = useDisclosure()
+  useDisclosure()
   const [showCTA, { setFalse: stopShowingCTA }] = useBoolean(true)
 
   useMount(scrollToBottom)
@@ -140,7 +141,7 @@ const DefendThePlanet: React.FC<Callback> = ({ onFinished }) => {
                 purchase MCO2 tokens.{" "}
               </Text>
               <Button size="xs" onClick={onToggle}>
-                {isOpen ? "OK, got it" : "Learn More"}
+                {isOpen ? "Close MCO2" : "MCO2 Tokens"}
               </Button>
               <Collapse in={isOpen}>
                 <Box bg="gray.50" p={4} rounded="md">
@@ -187,6 +188,7 @@ const DefendThePlanet: React.FC<Callback> = ({ onFinished }) => {
 }
 
 const CollectNifties: React.FC<Callback> = ({ onFinished }) => {
+  const { isOpen, onToggle } = useDisclosure()
   const [showCTA, { setFalse: stopShowingCTA }] = useBoolean(true)
 
   useMount(scrollToBottom)
@@ -202,9 +204,23 @@ const CollectNifties: React.FC<Callback> = ({ onFinished }) => {
             <Sparkles>Collect nifties</Sparkles>
           </Heading>
           <FadeUpBox delay={0.5} y={10}>
-            <Text fontSize="xl" color="gray.700" textAlign="center">
-              Earn exclusive NFTs from project partners as you save money.
-            </Text>
+            <VStack>
+              <Text fontSize="xl" color="gray.700" textAlign="center">
+                Earn exclusive NFTs from project partners as you save money.
+              </Text>
+              <Button size="xs" onClick={onToggle}>
+                {isOpen ? "Close" : "Contest Details"}
+              </Button>
+
+              <Collapse in={isOpen}>
+                <Box bg="gray.50" p={4} rounded="md" w="sm">
+                  <Text color="gray.500" textAlign="left">
+                    Snapshots from when we hit funding goals of 250, 500, and
+                    1000 MCO2 tokens will be used to determine eligibility.
+                  </Text>
+                </Box>
+              </Collapse>
+            </VStack>
           </FadeUpBox>
           {showCTA && (
             <FadeUpBox delay={3} y={20}>
