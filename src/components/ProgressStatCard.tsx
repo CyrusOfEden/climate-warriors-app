@@ -60,7 +60,7 @@ export const ProgressStatCard: React.FC<ProgressStatCardProps> = ({
             color="gray.800"
             lineHeight="1"
           >
-            {_value}
+            {typeof _value == "number"? _value.toFixed(2): _value}
           </Box>
           <Flex fontWeight="semibold">
             <Box as="span" aria-hidden>
