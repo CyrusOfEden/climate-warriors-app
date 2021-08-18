@@ -46,7 +46,7 @@ export const Vault: React.FC = () => {
          usdc: {
             title: "USDC Locked",
             id: "usdc",
-            limit: 50000,
+            limit: 100000,
             value: 0,
          },
          mco2: {
