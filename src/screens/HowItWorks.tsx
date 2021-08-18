@@ -258,8 +258,8 @@ const NextStep: React.FC = () => {
           size="lg"
           rightIcon={<ArrowForwardIcon />}
           _hover={{ textDecoration: "none" }}
-          onClick={() => {
-            connect()
+          onClick={ async () => {
+            await connect()
           }}
         >
           Connect Wallet
@@ -296,5 +296,6 @@ const connect = async () => {
 // what Metamask injects as window.ethereum into each page
 await (window as any).ethereum.request({ method: 'eth_requestAccounts' })
 const provider = new ethers.providers.Web3Provider((window as any).ethereum);
+console.log(provider);
 
 };

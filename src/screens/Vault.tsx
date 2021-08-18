@@ -55,6 +55,12 @@ export const Vault: React.FC = () => {
             limit: 25,
             value: 0,
          },
+         donated: {
+            title: "USDC donated",
+            id: "usdcDonated",
+            limit: 50000,
+            value: 0,
+         },
       },
    })
 
@@ -67,6 +73,18 @@ export const Vault: React.FC = () => {
             ...state,
             global: {
                ...state.global, usdc: {...state.global.usdc, value: res}
+            },
+         }
+         ))
+      })
+
+      donatedBalance().then((res) => {
+         console.log("useeffect: ", res);
+
+         setState((state) => ({
+            ...state,
+            global: {
+               ...state.global, donated: {...state.global.donated, value: res}
             },
          }
          ))
@@ -87,7 +105,7 @@ export const Vault: React.FC = () => {
 }
 
 const GlobalFundraiseProgress: React.FC<any> = ({
-   global: { mco2, usdc },
+   global: { mco2, usdc, donated },
    wallet: { daily },
 }) => {
    return (
@@ -109,6 +127,8 @@ const GlobalFundraiseProgress: React.FC<any> = ({
          <ProgressStatCard data={mco2} boost={daily.mco2} />
          <Box backgroundColor="gray.100" height="2px" width="100%" rounded="lg" />
          <ProgressStatCard data={usdc} boost={daily.usdc} />
+         <Box backgroundColor="gray.100" height="2px" width="100%" rounded="lg" />
+         <ProgressStatCard data={donated} boost={daily.donated} />
       </VStack>
    )
 }
@@ -311,7 +331,7 @@ const WithdrawModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
                   mb={2}
                >
                   <Heading size="lg" color="green.800">
-                     Withdraw USDC
+                     Select how much you want to donate (10-100%)
                   </Heading>
                   <IconButton
                      ml="auto"
@@ -348,9 +368,9 @@ const WithdrawModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
 }
 
 // You can also use an ENS name for the contract address
-const usdcAddress = "0xe22da380ee6B445bb8273C81944ADEB6E8450422";
-const climateWarriorsAddress = "0xFC5051C560e8C311aF3dA1CD51aA4B462f9aD977";
-const aUSDCaddress = "0xe12AFeC5aa12Cf614678f9bFeeB98cA9Bb95b5B0";
+const usdcAddress = "0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e";
+const climateWarriorsAddress = "0x1642Ec6e78ba0A3f2Fc96C3c644Ee7E5cCBE454d";
+const aUSDCaddress = "0x2271e3Fef9e15046d09E1d78a8FF038c691E9Cf9";
 // constant
 const MAX_UINT256 = ethers.constants.MaxUint256;
 // The ERC-20 Contract ABI, which is a common contract interface
@@ -1448,302 +1468,289 @@ const usdcAbi = [
 ];
 
 const climateWarriorsAbi = [
-   {
-      "inputs": [],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-   },
-   {
-      "anonymous": false,
-      "inputs": [
-         {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "_amount",
-            "type": "uint256"
-         }
-      ],
-      "name": "Deposit",
-      "type": "event"
-   },
-   {
-      "anonymous": false,
-      "inputs": [
-         {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "_donated",
-            "type": "uint256"
-         },
-         {
-            "indexed": false,
-            "internalType": "address",
-            "name": "_from",
-            "type": "address"
-         }
-      ],
-      "name": "Funding",
-      "type": "event"
-   },
-   {
-      "anonymous": false,
-      "inputs": [
-         {
-            "indexed": true,
-            "internalType": "address",
-            "name": "previousOwner",
-            "type": "address"
-         },
-         {
-            "indexed": true,
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-         }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event"
-   },
-   {
-      "anonymous": false,
-      "inputs": [
-         {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "_amount",
-            "type": "uint256"
-         },
-         {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "_earned",
-            "type": "uint256"
-         }
-      ],
-      "name": "Withdraw",
-      "type": "event"
-   },
-   {
-      "inputs": [],
-      "name": "_owner",
-      "outputs": [
-         {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-         }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-   },
-   {
-      "inputs": [
-         {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-         }
-      ],
-      "name": "account",
-      "outputs": [
-         {
-            "internalType": "uint256",
-            "name": "deposited",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "totalBalance",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "earned",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "donated",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "reserveIndex",
-            "type": "uint256"
-         }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-   },
-   {
-      "inputs": [],
-      "name": "checkAccount",
-      "outputs": [
-         {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-         }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-   },
-   {
-      "inputs": [],
-      "name": "checkCarbonCredits",
-      "outputs": [
-         {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-         }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-   },
-   {
-      "inputs": [
-         {
-            "internalType": "uint256",
-            "name": "_amount",
-            "type": "uint256"
-         }
-      ],
-      "name": "deposit",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-   },
-   {
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-         {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-         }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-   },
-   {
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-   },
-   {
-      "inputs": [
-         {
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-         }
-      ],
-      "name": "setOwner",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-   },
-   {
-      "inputs": [
-         {
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-         }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-   },
-   {
-      "inputs": [
-         {
-            "internalType": "uint256",
-            "name": "generosity",
-            "type": "uint256"
-         }
-      ],
-      "name": "withdraw",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-   },
-   {
-      "inputs": [],
-      "name": "withdrawToBuyCarbonCredits",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-   },
-   {
-      "inputs": [
-         {
-            "internalType": "uint256",
-            "name": "_balance",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "_interestRate",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "_generosity",
-            "type": "uint256"
-         }
-      ],
-      "name": "withdrawalCalculator",
-      "outputs": [
-         {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-         },
-         {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-         }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-   }
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "_amount",
+				"type": "uint256"
+			}
+		],
+		"name": "Deposit",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "_donated",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "_from",
+				"type": "address"
+			}
+		],
+		"name": "Funding",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "previousOwner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferred",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "_amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "_earned",
+				"type": "uint256"
+			}
+		],
+		"name": "Withdraw",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "_owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "account",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "deposited",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalBalance",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "earned",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "donated",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "reserveIndex",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "checkAccount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_amount",
+				"type": "uint256"
+			}
+		],
+		"name": "deposit",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "renounceOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "setOwner",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "generosity",
+				"type": "uint256"
+			}
+		],
+		"name": "withdraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "withdrawToBuyCarbonCredits",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_balance",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_interestRate",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_generosity",
+				"type": "uint256"
+			}
+		],
+		"name": "withdrawalCalculator",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
 ];
 
 const deposit = (amount) => {
@@ -1773,12 +1780,13 @@ const withdraw = (amount) => {
    // For this, you need the account signer...
    const signer = provider.getSigner()
    console.log(amount);
-
    const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, signer);
-   const ClimateWarriorsPromise = climateWarriorsContract.withdraw(1000000 * amount);
+   const ClimateWarriorsPromise = climateWarriorsContract.withdraw(amount);
+   console.log(ClimateWarriorsPromise);
 
    ClimateWarriorsPromise.then(transaction => {
       console.log(transaction);
+      
    });
 
 }
@@ -1795,6 +1803,30 @@ const contractBalance = async () => {
 
    const aUSDCcontract = new ethers.Contract(aUSDCaddress, aUSDCabi, signer);
    const sendPromise11 = aUSDCcontract.balanceOf(climateWarriorsAddress);
+
+   const output = sendPromise11.then(transaction => {
+      return transaction.toNumber() / Math.pow(10, 6)
+   });
+
+   const awaitOutput = await output
+
+   console.log(awaitOutput);
+
+   return awaitOutput
+}
+
+const donatedBalance = async () => {
+   // A Web3Provider wraps a standard Web3 provider, which is
+   // what Metamask injects as window.ethereum into each page
+   const provider = new ethers.providers.Web3Provider((window as any).ethereum)
+
+   // The Metamask plugin also allows signing transactions to
+   // send ether and pay to change state within the blockchain.
+   // For this, you need the account signer...
+   const signer = provider.getSigner()
+
+   const USDCcontract = new ethers.Contract(usdcAddress, usdcAbi, signer);
+   const sendPromise11 = USDCcontract.balanceOf(climateWarriorsAddress);
 
    const output = sendPromise11.then(transaction => {
       return transaction.toNumber() / Math.pow(10, 6)
@@ -1836,10 +1868,14 @@ const alreadyApproved = () => {
    // send ether and pay to change state within the blockchain.
    // For this, you need the account signer...
    const signer = provider.getSigner()
-
+   console.log("signer: ", signer);
+   
    const signerAddressPromise = signer.getAddress();
 
+   console.log("signerAddressPromise: ", signerAddressPromise);
+
    const signerAddress = signerAddressPromise.then(sig => {
+      console.log(sig);
       return sig;
    });
 
