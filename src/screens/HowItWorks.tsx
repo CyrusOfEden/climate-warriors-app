@@ -253,16 +253,13 @@ const NextStep: React.FC = () => {
       <FadeUpBox delay={0}>
         <Button
           as={Link}
-          to="/vault"
+          to="/"
           colorScheme="green"
           size="lg"
           rightIcon={<ArrowForwardIcon />}
           _hover={{ textDecoration: "none" }}
-          onClick={ async () => {
-            await connect()
-          }}
         >
-          Connect Wallet
+          Go to the main page
         </Button>
       </FadeUpBox>
     </VStack>
@@ -290,12 +287,3 @@ export const HowItWorks: React.FC = () => {
     </Container>
   )
 }
-
-const connect = async () => {
-  // A Web3Provider wraps a standard Web3 provider, which is
-// what Metamask injects as window.ethereum into each page
-await (window as any).ethereum.request({ method: 'eth_requestAccounts' })
-const provider = new ethers.providers.Web3Provider((window as any).ethereum);
-console.log(provider);
-
-};

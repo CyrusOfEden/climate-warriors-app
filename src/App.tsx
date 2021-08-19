@@ -21,7 +21,7 @@ export const App: React.FC = () => {
             <Route path="/how-it-works">
               <HowItWorks />
             </Route>
-            <Route path="/vault">
+            <Route path="/">
               <Vault />
             </Route>
           </Switch>
