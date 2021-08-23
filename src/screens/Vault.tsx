@@ -87,16 +87,18 @@ export const Vault: React.FC = () => {
 
    const [provider, loadWeb3Modal, logoutOfWeb3Modal] = useWeb3Modal();
 
-   console.log("provider: ", provider);
-   console.log("OBJECT?: ", typeof provider);
+   // console.log("provider: ", provider);
+   // console.log("OBJECT?: ", typeof provider);
    
 
    useEffect(() => {
       // Update the document title using the browser API
+      // console.log("HI");
+      
       if(typeof provider === 'object' && provider !== null) {
       setInterval(()=> {
          contractBalance().then((res) => {
-            console.log("useeffect: ", res);
+            // console.log("useeffect: ", res);
    
             setState((state) => ({
                ...state,
@@ -108,7 +110,7 @@ export const Vault: React.FC = () => {
          })
    
          donatedBalance().then((res) => {
-            console.log("useeffect: ", res);
+            // console.log("useeffect: ", res);
    
             setState((state) => ({
                ...state,
@@ -123,7 +125,7 @@ export const Vault: React.FC = () => {
    }
    },[]);
 
-   console.log(state)
+   // console.log(state)
 
    return (
       <Container maxW="container.lg">
@@ -181,7 +183,7 @@ const DepositActions: React.FC<any> = ({ deposited, setState, provider }) => {
       if(typeof provider === 'object' && provider !== null) {
       async function alrAppr () {
          let result = await alreadyApproved();
-         console.log(result);
+         // console.log(result);
          if (result) {
             setShouldShow(false)
          }
@@ -245,7 +247,7 @@ const DepositActions: React.FC<any> = ({ deposited, setState, provider }) => {
                   rightIcon={<CheckIcon />}
                   onClick={async () => {
                      let result = await alreadyApproved();
-                     console.log(result);
+                     // console.log(result);
                      if (result) {
                         setShouldShow(false)
                      }
@@ -331,7 +333,7 @@ const DepositModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
                            }
                            ))
                            props.onClose()
-                           console.log("Close");
+                           // console.log("Close");
                         }}
                      >
                         Deposit
@@ -421,7 +423,7 @@ const deposit = (amount) => {
    // send ether and pay to change state within the blockchain.
    // For this, you need the account signer...
    const signer = provider.getSigner()
-   console.log(amount)
+   // console.log(amount)
 
    const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, signer);
    const ClimateWarriorsPromise = climateWarriorsContract.deposit(1000000 * amount);
@@ -438,13 +440,13 @@ const withdraw = (amount) => {
    // send ether and pay to change state within the blockchain.
    // For this, you need the account signer...
    const signer = provider.getSigner()
-   console.log(amount);
+   // console.log(amount);
    const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, signer);
    const ClimateWarriorsPromise = climateWarriorsContract.withdraw(amount);
-   console.log(ClimateWarriorsPromise);
+   // console.log(ClimateWarriorsPromise);
 
    ClimateWarriorsPromise.then(transaction => {
-      console.log(transaction);
+      // console.log(transaction);
       
    });
 
@@ -469,7 +471,7 @@ const contractBalance = async () => {
 
    const awaitOutput = await output
 
-   console.log(awaitOutput);
+   // console.log(awaitOutput);
 
    return awaitOutput
 }
@@ -493,7 +495,7 @@ const donatedBalance = async () => {
 
    const awaitOutput = await output
 
-   console.log(awaitOutput);
+   // console.log(awaitOutput);
 
    return awaitOutput
 }
@@ -527,14 +529,14 @@ const alreadyApproved = () => {
    // send ether and pay to change state within the blockchain.
    // For this, you need the account signer...
    const signer = provider.getSigner()
-   console.log("signer: ", signer);
+   // console.log("signer: ", signer);
    
    const signerAddressPromise = signer.getAddress();
 
-   console.log("signerAddressPromise: ", signerAddressPromise);
+   // console.log("signerAddressPromise: ", signerAddressPromise);
 
    const signerAddress = signerAddressPromise.then(sig => {
-      console.log(sig);
+      // console.log(sig);
       return sig;
    });
 
@@ -542,7 +544,7 @@ const alreadyApproved = () => {
    const usdcContractPromise = usdcContract.allowance(signerAddress, climateWarriorsAddress);
 
    const contractAllowance = usdcContractPromise.then(transaction => {
-      console.log((transaction._hex) > 0);
+      // console.log((transaction._hex) > 0);
 
       return (transaction._hex) > 0;
    });
