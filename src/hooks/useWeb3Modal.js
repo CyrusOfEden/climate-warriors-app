@@ -7,7 +7,7 @@ require('dotenv').config()
 // You can get a key for free at https://infura.io/register
 const INFURA_ID = process.env.INFURA_ID;
 
-const NETWORK_NAME = "mumbai";
+const NETWORK_NAME = "maticmum";
 
 function useWeb3Modal(config = {}) {
   const [provider, setProvider] = useState();
