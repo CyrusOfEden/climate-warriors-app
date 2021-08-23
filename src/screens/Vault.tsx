@@ -87,33 +87,40 @@ export const Vault: React.FC = () => {
 
    const [provider, loadWeb3Modal, logoutOfWeb3Modal] = useWeb3Modal();
 
+   console.log("provider: ", provider);
+   console.log("OBJECT?: ", typeof provider);
+   
+
    useEffect(() => {
       // Update the document title using the browser API
+      if(typeof provider === 'object' && provider !== null) {
+      setInterval(()=> {
+         contractBalance().then((res) => {
+            console.log("useeffect: ", res);
+   
+            setState((state) => ({
+               ...state,
+               global: {
+                  ...state.global, usdc: {...state.global.usdc, value: res}
+               },
+            }
+            ))
+         })
+   
+         donatedBalance().then((res) => {
+            console.log("useeffect: ", res);
+   
+            setState((state) => ({
+               ...state,
+               global: {
+                  ...state.global, donated: {...state.global.donated, value: res}
+               },
+            }
+            ))
+         })
+      }, 10000)
       
-      contractBalance().then((res) => {
-         console.log("useeffect: ", res);
-
-         setState((state) => ({
-            ...state,
-            global: {
-               ...state.global, usdc: {...state.global.usdc, value: res}
-            },
-         }
-         ))
-      })
-
-      donatedBalance().then((res) => {
-         console.log("useeffect: ", res);
-
-         setState((state) => ({
-            ...state,
-            global: {
-               ...state.global, donated: {...state.global.donated, value: res}
-            },
-         }
-         ))
-      })
-
+   }
    },[]);
 
    console.log(state)
@@ -125,7 +132,7 @@ export const Vault: React.FC = () => {
          </Heading>
          <SimpleGrid columns={2} spacing={8}>
             <GlobalFundraiseProgress {...state} />
-            <DepositActions {...state.wallet} setState={setState} />
+            <DepositActions {...state.wallet} setState={setState} provider={provider}/>
          </SimpleGrid>
       </Container>
    )
@@ -160,7 +167,7 @@ const GlobalFundraiseProgress: React.FC<any> = ({
    )
 }
 
-const DepositActions: React.FC<any> = ({ deposited, setState }) => {
+const DepositActions: React.FC<any> = ({ deposited, setState, provider }) => {
    const { isOpen: isDepositModelOpen, onToggle: toggleDepositModal } =
       useDisclosure()
 
@@ -171,6 +178,7 @@ const DepositActions: React.FC<any> = ({ deposited, setState }) => {
    const [shouldShow, setShouldShow] = useState(true);
    
    useEffect(() => {
+      if(typeof provider === 'object' && provider !== null) {
       async function alrAppr () {
          let result = await alreadyApproved();
          console.log(result);
@@ -179,6 +187,7 @@ const DepositActions: React.FC<any> = ({ deposited, setState }) => {
          }
    }
    alrAppr()
+   }
    })
 
    return (
@@ -541,17 +550,3 @@ const alreadyApproved = () => {
    return contractAllowance;
 }
 
-
-
-// onClick={ async () => {
-//    await connect()
-//  }}
-
-// const connect = async () => {
-//    // A Web3Provider wraps a standard Web3 provider, which is
-//  // what Metamask injects as window.ethereum into each page
-//  await (window as any).ethereum.request({ method: 'eth_requestAccounts' })
-//  const provider = new ethers.providers.Web3Provider((window as any).ethereum);
-//  console.log(provider);
- 
-//  };
