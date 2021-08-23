@@ -95,7 +95,7 @@ export const Vault: React.FC = () => {
       // Update the document title using the browser API
       // console.log("HI");
       
-      if(typeof provider === 'object' && provider !== null) {
+      if(provider !== Object && provider !== null) {
       // console.log(provider._network.chainId);
       
       setInterval(()=> {
@@ -190,8 +190,6 @@ const DepositActions: React.FC<any> = ({ deposited, setState, provider }) => {
    }
 
    useEffect(() => {
-      // console.log("HI", provider);
-      
       if(typeof provider === 'object' && provider !== null) {   
       alrAppr()
       }
