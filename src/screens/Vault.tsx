@@ -87,7 +87,7 @@ export const Vault: React.FC = () => {
 
    const [provider, loadWeb3Modal, logoutOfWeb3Modal] = useWeb3Modal();
 
-   // console.log("provider: ", provider);
+   console.log("provider: ", provider);
    // console.log("OBJECT?: ", typeof provider);
    
 
@@ -96,6 +96,8 @@ export const Vault: React.FC = () => {
       // console.log("HI");
       
       if(typeof provider === 'object' && provider !== null) {
+      // console.log(provider._network.chainId);
+      
       setInterval(()=> {
          contractBalance().then((res) => {
             // console.log("useeffect: ", res);
@@ -179,17 +181,20 @@ const DepositActions: React.FC<any> = ({ deposited, setState, provider }) => {
 
    const [shouldShow, setShouldShow] = useState(true);
    
+   async function alrAppr () {
+      let result = await alreadyApproved();
+      // console.log(result);
+      if (result) {
+         setShouldShow(false)
+      }
+   }
+
    useEffect(() => {
-      if(typeof provider === 'object' && provider !== null) {
-      async function alrAppr () {
-         let result = await alreadyApproved();
-         // console.log(result);
-         if (result) {
-            setShouldShow(false)
-         }
-   }
-   alrAppr()
-   }
+      // console.log("HI", provider);
+      
+      if(typeof provider === 'object' && provider !== null) {   
+      alrAppr()
+      }
    })
 
    return (
@@ -322,7 +327,8 @@ const DepositModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
                         colorScheme="green"
                         onClick={async () => {
                            const tx = await deposit(amount)
-                           console.log("tx: ", tx);
+                           // alert("See transaction on polygonscan".link("https://www.mumbai.polygonscan.com/tx/"+ String(await tx)));
+                           // Open a Modal to see transaction hash?
                            let result = await contractBalance();
                            console.log("result after deposit: ", result);
                            setState((state) => ({
@@ -394,7 +400,8 @@ const WithdrawModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
                      </NumberInput>
                      <Button flex={1} colorScheme="purple" onClick={() => {
                         withdraw(amount)
-                     }}>
+                        props.onClose()
+                     }} >
                         Withdraw
                      </Button>
                   </HStack>
@@ -402,6 +409,43 @@ const WithdrawModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
             </AlertDialogContent>
          </AlertDialogOverlay>
       </AlertDialog>
+   )
+}
+
+const TransactionModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
+   
+   return (
+         <AlertDialogOverlay>
+            <AlertDialogContent p={8}>
+               <AlertDialogHeader
+                  fontSize="lg"
+                  fontWeight="bold"
+                  display="flex"
+                  align="center"
+                  justifyContent="space-between"
+                  mb={2}
+               >
+                  <Heading size="lg" color="green.800">
+                     Tx Info
+                  </Heading>
+                  <IconButton
+                     ml="auto"
+                     aria-label="Cancel Deposit"
+                     size="sm"
+                     variant="outline"
+                     rounded="3xl"
+                     onClick={props.onClose}
+                     icon={<CloseIcon />}
+                  />
+               </AlertDialogHeader>
+
+               <AlertDialogBody>
+                  <HStack>
+                     
+                  </HStack>
+               </AlertDialogBody>
+            </AlertDialogContent>
+         </AlertDialogOverlay>
    )
 }
 
