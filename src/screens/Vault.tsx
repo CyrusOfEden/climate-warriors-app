@@ -87,9 +87,32 @@ export const Vault: React.FC = () => {
 
    const [provider, loadWeb3Modal, logoutOfWeb3Modal] = useWeb3Modal();
 
-   console.log("provider: ", provider);
+   // console.log("provider: ", provider);
    // console.log("OBJECT?: ", typeof provider);
    
+   const updateBalDon = async () => {
+      let result = await contractBalance();
+      // console.log("result after deposit: ", result);
+      setState((state) => ({
+         ...state,
+         global: {
+            ...state.global, usdc: {...state.global.usdc, value: result}
+         },
+      }
+      ))
+
+      // console.log(state.global, state.global.donated);
+      
+      let usdcDonated = await donatedBalance();
+      setState((state) => ({
+         ...state,
+         global: {
+            ...state.global, donated: {...state.global.donated, value: usdcDonated}
+         },
+      }
+      ))
+   }
+
 
    useEffect(() => {
       // Update the document title using the browser API
@@ -98,34 +121,17 @@ export const Vault: React.FC = () => {
       if(typeof provider === "object") { ///////////!!!!!!!!!!!!!!!!!!! SOMETHING WRONG HERE !!!!!!!!!!!!!!///////////////
       // console.log(provider._network.chainId);
       
-      setInterval(()=> {
-         contractBalance().then((res) => {
-            // console.log("useeffect: ", res);
-   
-            setState((state) => ({
-               ...state,
-               global: {
-                  ...state.global, usdc: {...state.global.usdc, value: res}
-               },
-            }
-            ))
-         })
-   
-         donatedBalance().then((res) => {
-            // console.log("useeffect: ", res);
-   
-            setState((state) => ({
-               ...state,
-               global: {
-                  ...state.global, donated: {...state.global.donated, value: res}
-               },
-            }
-            ))
-         })
-      }, 10000)
+      var handle = setInterval(()=> {
+         // console.log("UseEffect() in Vault");
+         updateBalDon()
+      }, 10000);
+
+      return () => {
+         clearInterval(handle);
+      }
       
    }
-   },[]);
+   });
 
    // console.log(state)
 
@@ -190,7 +196,7 @@ const DepositActions: React.FC<any> = ({ deposited, setState, provider }) => {
    }
 
    useEffect(() => {
-      console.log(typeof provider === "object");
+      // console.log(typeof provider === "object");
       
       if(typeof provider === "object") {   
       alrAppr()
@@ -280,6 +286,26 @@ const DepositModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
 
    const [amount, setAmount] = useState<number>(100)
 
+   const updateBalDon = async () => {
+      let result = await contractBalance();
+      // console.log("result after deposit: ", result);
+      setState((state) => ({
+         ...state,
+         global: {
+            ...state.global, usdc: {...state.global.usdc, value: result}
+         },
+      }
+      ))
+      let usdcDonated = await donatedBalance();
+      setState((state) => ({
+         ...state,
+         global: {
+            ...state.global, donated: {...state.global.donated, value: usdcDonated}
+         },
+      }
+      ))
+   }
+
    return (
       <AlertDialog
          leastDestructiveRef={depositAmountRef}
@@ -329,15 +355,8 @@ const DepositModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
                            const tx = await deposit(amount)
                            // alert("See transaction on polygonscan".link("https://www.mumbai.polygonscan.com/tx/"+ String(await tx)));
                            // Open a Modal to see transaction hash?
-                           let result = await contractBalance();
-                           console.log("result after deposit: ", result);
-                           setState((state) => ({
-                              ...state,
-                              global: {
-                                 ...state.global, usdc: {...state.global.usdc, value: result}
-                              },
-                           }
-                           ))
+                           // console.log("Deposit");
+                           updateBalDon()
                            props.onClose()
                            // console.log("Close");
                         }}
@@ -412,43 +431,6 @@ const WithdrawModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
    )
 }
 
-const TransactionModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
-   
-   return (
-         <AlertDialogOverlay>
-            <AlertDialogContent p={8}>
-               <AlertDialogHeader
-                  fontSize="lg"
-                  fontWeight="bold"
-                  display="flex"
-                  align="center"
-                  justifyContent="space-between"
-                  mb={2}
-               >
-                  <Heading size="lg" color="green.800">
-                     Tx Info
-                  </Heading>
-                  <IconButton
-                     ml="auto"
-                     aria-label="Cancel Deposit"
-                     size="sm"
-                     variant="outline"
-                     rounded="3xl"
-                     onClick={props.onClose}
-                     icon={<CloseIcon />}
-                  />
-               </AlertDialogHeader>
-
-               <AlertDialogBody>
-                  <HStack>
-                     
-                  </HStack>
-               </AlertDialogBody>
-            </AlertDialogContent>
-         </AlertDialogOverlay>
-   )
-}
-
 // You can also use an ENS name for the contract address
 const usdcAddress = "0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e";
 const climateWarriorsAddress = "0x1642Ec6e78ba0A3f2Fc96C3c644Ee7E5cCBE454d";
@@ -515,7 +497,7 @@ const contractBalance = async () => {
 
    const awaitOutput = await output
 
-   // console.log(awaitOutput);
+   // console.log("contractBalance: ",awaitOutput);
 
    return awaitOutput
 }
@@ -539,7 +521,7 @@ const donatedBalance = async () => {
 
    const awaitOutput = await output
 
-   // console.log(awaitOutput);
+   // console.log("donatedBalance: ",awaitOutput);
 
    return awaitOutput
 }
