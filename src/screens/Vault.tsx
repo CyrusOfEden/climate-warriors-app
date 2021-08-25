@@ -57,15 +57,16 @@ export const Vault: React.FC = () => {
    // Similar to componentDidMount and componentDidUpdate:
    const [state, setState] = useSetState<VaultState>({
       wallet: {
-         deposited: 0,
-         daily: {
-            mco2: 0.0,
-            usdc: 0.0,
+         yusdc: {
+            title: "Your USDC Locked",
+            id: "yusdc",
+            limit: 100000,
+            value: 0,
          },
       },
       global: {
          usdc: {
-            title: "USDC Locked",
+            title: "Total USDC Locked",
             id: "usdc",
             limit: 100000,
             value: 0,
@@ -79,7 +80,7 @@ export const Vault: React.FC = () => {
          donated: {
             title: "USDC donated",
             id: "usdcDonated",
-            limit: 50000,
+            limit: 100,
             value: 0,
          },
       },
@@ -108,6 +109,15 @@ export const Vault: React.FC = () => {
          ...state,
          global: {
             ...state.global, donated: {...state.global.donated, value: usdcDonated}
+         },
+      }
+      ))
+
+      let ywBal = await checkUserAccount();
+      setState((state) => ({
+         ...state,
+         wallet: {
+            ...state.wallet, yusdc: {...state.wallet.yusdc, value: ywBal}
          },
       }
       ))
@@ -142,7 +152,7 @@ export const Vault: React.FC = () => {
          </Heading>
          <SimpleGrid columns={2} spacing={8}>
             <GlobalFundraiseProgress {...state} />
-            <DepositActions {...state.wallet} setState={setState} provider={provider}/>
+            <DepositActions {...state.global} setState={setState} provider={provider}/>
          </SimpleGrid>
       </Container>
    )
@@ -150,7 +160,7 @@ export const Vault: React.FC = () => {
 
 const GlobalFundraiseProgress: React.FC<any> = ({
    global: { mco2, usdc, donated },
-   wallet: { daily },
+   wallet: { yusdc },
 }) => {
    return (
       <VStack
@@ -166,18 +176,21 @@ const GlobalFundraiseProgress: React.FC<any> = ({
          rounded="lg"
       >
          <Heading color="green.800" size="lg">
-            Climate Warriors Stats
+            Climate Warriors
          </Heading>
-         <ProgressStatCard data={mco2} boost={daily.mco2} />
+         <ProgressStatCard data={usdc} boost={0} />
          <Box backgroundColor="gray.100" height="2px" width="100%" rounded="lg" />
-         <ProgressStatCard data={usdc} boost={daily.usdc} />
+         <ProgressStatCard data={yusdc} boost={0}/>
          <Box backgroundColor="gray.100" height="2px" width="100%" rounded="lg" />
-         <ProgressStatCard data={donated} boost={daily.donated} />
+         <ProgressStatCard data={donated} boost={0} />
+         <Box backgroundColor="gray.100" height="2px" width="100%" rounded="lg" />
+         <ProgressStatCard data={mco2} boost={0} />
       </VStack>
    )
 }
 
-const DepositActions: React.FC<any> = ({ deposited, setState, provider }) => {
+const DepositActions: React.FC<any> = ({ donated, setState, provider }) => {
+   
    const { isOpen: isDepositModelOpen, onToggle: toggleDepositModal } =
       useDisclosure()
 
@@ -216,7 +229,7 @@ const DepositActions: React.FC<any> = ({ deposited, setState, provider }) => {
          rounded="lg"
          spacing={4}
       >
-         {deposited < 100 && (
+         {donated.value < 100 && (
             <>
                <Spacer maxH={2} />
                <Heading color="green.600" size="sm">
@@ -224,7 +237,19 @@ const DepositActions: React.FC<any> = ({ deposited, setState, provider }) => {
                </Heading>
                <Alert status="warning" rounded="md" p={4}>
                   <AlertIcon />
-                  100 USDC donated
+                  Donate 100 USDC
+               </Alert>
+            </>
+         )}
+         {donated.value > 100 && (
+            <>
+               <Spacer maxH={2} />
+               <Heading color="green.600" size="sm">
+                  Community quest:
+               </Heading>
+               <Alert status="success" rounded="md" p={4}>
+                  <AlertIcon />
+                  100 USDC were donated!
                </Alert>
             </>
          )}
@@ -353,6 +378,7 @@ const DepositModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
                         colorScheme="green"
                         onClick={async () => {
                            const tx = await deposit(amount)
+                           console.log(tx);
                            // alert("See transaction on polygonscan".link("https://www.mumbai.polygonscan.com/tx/"+ String(await tx)));
                            // Open a Modal to see transaction hash?
                            // console.log("Deposit");
@@ -433,7 +459,7 @@ const WithdrawModal: React.FC<ActionModalProps> = ({ setState, ...props }) => {
 
 // You can also use an ENS name for the contract address
 const usdcAddress = "0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e";
-const climateWarriorsAddress = "0x1642Ec6e78ba0A3f2Fc96C3c644Ee7E5cCBE454d";
+const climateWarriorsAddress = "0xbce2126BC4Bd8e1Ac96Bbd39F8558B129ddadf06";
 const aUSDCaddress = "0x2271e3Fef9e15046d09E1d78a8FF038c691E9Cf9";
 // constant
 const MAX_UINT256 = ethers.constants.MaxUint256;
@@ -578,3 +604,20 @@ const alreadyApproved = () => {
    return contractAllowance;
 }
 
+const checkUserAccount = async () => {
+   // A Web3Provider wraps a standard Web3 provider, which is
+   // what Metamask injects as window.ethereum into each page
+   const provider = new ethers.providers.Web3Provider((window as any).ethereum)
+
+   // The Metamask plugin also allows signing transactions to
+   // send ether and pay to change state within the blockchain.
+   // For this, you need the account signer...
+   const signer = provider.getSigner()
+
+   const climateWarriorsContract = new ethers.Contract(climateWarriorsAddress, climateWarriorsAbi, signer);
+   const result = await climateWarriorsContract.checkAccount();
+
+   // console.log("checkUserAccount: ",result[1].toNumber()/ Math.pow(10, 6));
+
+   return result[1].toNumber() / Math.pow(10, 6)
+}
