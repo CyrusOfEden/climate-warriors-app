@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@ahooksjs/use-url-state": "^2.5.8",
+    "@apollo/client": "^3.4.9",
     "@chakra-ui/icons": "^1.0.15",
     "@chakra-ui/react": "^1.6.6",
     "@emotion/react": "^11.4.1",
@@ -19,6 +20,7 @@
     "ahooks": "^2.10.9",
     "ethers": "^5.4.5",
     "framer-motion": "^4.1.17",
+    "graphql": "^15.5.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-icons": "^4.2.0",

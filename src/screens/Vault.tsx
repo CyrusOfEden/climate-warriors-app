@@ -30,7 +30,63 @@ import { aUSDCabi } from "../ABIs/aUSDCabi";
 import { usdcAbi } from "../ABIs/USDCabi";
 import { climateWarriorsAbi } from "../ABIs/climateWarriorsAbi";
 
+//////////////////// THE GRAPH QUERY ////////////////////
 
+import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
+
+const APIURL = "https://api.studio.thegraph.com/query/131/cliwa/v0.0.0.7";
+
+const depositQuery = `
+query{
+      depositEvs {
+         id
+         count
+         _amount
+      }
+   } 
+`
+
+const withdrawFundingQuery = `
+query($fromAddr: Bytes!) {
+   withdrawEvs{
+      id
+      count
+      _amount
+      _earned
+   }
+   fundingEvs(where: {_from: $fromAddr }) {
+   id
+   count
+   _from
+   _donated
+   }
+}
+`
+
+const client = new ApolloClient({
+  uri: APIURL,
+  cache: new InMemoryCache()
+});
+
+client.query({
+  query: gql(depositQuery)
+})
+.then(data => {
+   console.log(data.data.depositEvs[0].id," deposited ", data.data.depositEvs[0]._amount / Math.pow(10, 6), " USDC.")})
+.catch(err => { console.log("Error fetching data: ", err) });
+
+const addr = "0xeCbecC9ACe13cbbA6a586e1F2d171619baFdAA1b"
+
+client.query({
+   query: gql(withdrawFundingQuery),
+   variables: {
+    fromAddr: addr
+  }
+ })
+ .then(data => 
+    console.log("DATA: ", data))
+ .catch(err => { console.log("Error fetching data: ", err) });
+ ////////////////////////////////////////////////////////////
 
 function WalletButton({ provider, loadWeb3Modal, logoutOfWeb3Modal }) {
    return (
@@ -63,6 +119,12 @@ export const Vault: React.FC = () => {
             limit: 100000,
             value: 0,
          },
+         ydonated: {
+            title: "Your donated USDC",
+            id: "yusdc",
+            limit: 10000,
+            value: 0,
+         },
       },
       global: {
          usdc: {
@@ -88,10 +150,11 @@ export const Vault: React.FC = () => {
 
    const [provider, loadWeb3Modal, logoutOfWeb3Modal] = useWeb3Modal();
 
-   // console.log("provider: ", provider);
+   console.log("provider: ", provider);
    // console.log("OBJECT?: ", typeof provider);
    
    const updateBalDon = async () => {
+      let totDon = 0;
       let result = await contractBalance();
       // console.log("result after deposit: ", result);
       setState((state) => ({
@@ -121,6 +184,40 @@ export const Vault: React.FC = () => {
          },
       }
       ))
+      
+      let conAddr = await getConnectedAddress()
+      console.log("connectedAddress: ", conAddr)
+      
+
+      client.query({
+         query: gql(withdrawFundingQuery),
+         variables: {
+          fromAddr: String(conAddr)
+        }
+       })
+       .then(data => 
+         {  console.log("Subgraph data: ", data)
+
+            let numbOfDon = data.data.fundingEvs.length;
+            console.log("numbOfDon", numbOfDon);
+            
+            if(numbOfDon>0){
+            for (let i = 0; i < numbOfDon; i++) {
+               console.log("IN THE LOOP ",data.data.fundingEvs[i]._donated / Math.pow(10, 6));
+               totDon += data.data.fundingEvs[i]._donated / Math.pow(10, 6)
+            }
+            console.log("You donated ", totDon, " USDC");
+            setState((state) => ({
+            ...state,
+            wallet: {
+               ...state.wallet, ydonated: {...state.wallet.donated, value: totDon}
+            },
+         }
+         ))
+       }
+      }
+         )
+       .catch(err => { console.log("Error fetching data: ", err) });
    }
 
 
@@ -152,15 +249,18 @@ export const Vault: React.FC = () => {
          </Heading>
          <SimpleGrid columns={2} spacing={8}>
             <GlobalFundraiseProgress {...state} />
-            <DepositActions {...state.global} setState={setState} provider={provider}/>
+            <DepositActions globalState={state} setState={setState} provider={provider}/>
          </SimpleGrid>
       </Container>
    )
 }
 
 const GlobalFundraiseProgress: React.FC<any> = ({
+
+   
+
    global: { mco2, usdc, donated },
-   wallet: { yusdc },
+   wallet: { yusdc, ydonated },
 }) => {
    return (
       <VStack
@@ -180,16 +280,18 @@ const GlobalFundraiseProgress: React.FC<any> = ({
          </Heading>
          <ProgressStatCard data={usdc} boost={0} />
          <Box backgroundColor="gray.100" height="2px" width="100%" rounded="lg" />
+         <ProgressStatCard data={donated} boost={0} />
+         <Box backgroundColor="gray.100" height="2px" width="100%" rounded="lg" />
          <ProgressStatCard data={yusdc} boost={0}/>
          <Box backgroundColor="gray.100" height="2px" width="100%" rounded="lg" />
-         <ProgressStatCard data={donated} boost={0} />
+         <ProgressStatCard data={ydonated} boost={0} />
          <Box backgroundColor="gray.100" height="2px" width="100%" rounded="lg" />
          <ProgressStatCard data={mco2} boost={0} />
       </VStack>
    )
 }
 
-const DepositActions: React.FC<any> = ({ donated, setState, provider }) => {
+const DepositActions: React.FC<any> = ({ globalState, setState, provider }) => {
    
    const { isOpen: isDepositModelOpen, onToggle: toggleDepositModal } =
       useDisclosure()
@@ -229,7 +331,7 @@ const DepositActions: React.FC<any> = ({ donated, setState, provider }) => {
          rounded="lg"
          spacing={4}
       >
-         {donated.value < 100 && (
+         {globalState.global.donated.value < 100 && (
             <>
                <Spacer maxH={2} />
                <Heading color="green.600" size="sm">
@@ -241,7 +343,7 @@ const DepositActions: React.FC<any> = ({ donated, setState, provider }) => {
                </Alert>
             </>
          )}
-         {donated.value > 100 && (
+         {globalState.global.donated.value > 100 && (
             <>
                <Spacer maxH={2} />
                <Heading color="green.600" size="sm">
@@ -253,6 +355,22 @@ const DepositActions: React.FC<any> = ({ donated, setState, provider }) => {
                </Alert>
             </>
          )}
+         { globalState.wallet.ydonated.value > 100 && (
+            <>
+            <Spacer maxH={2} />
+            <Alert status="success" rounded="md" p={4}>
+                  <AlertIcon />
+                  You donated more than 100 USDC!
+               </Alert>
+               <Button
+               colorScheme="green"
+            >
+               Claim your Climate Warrior Badge!
+            </Button>
+            </>
+         )}
+
+
          <Heading color="green.600" size="sm" fontWeight="normal">
             Adjust your position
          </Heading>
@@ -620,4 +738,20 @@ const checkUserAccount = async () => {
    // console.log("checkUserAccount: ",result[1].toNumber()/ Math.pow(10, 6));
 
    return result[1].toNumber() / Math.pow(10, 6)
+}
+
+
+const getConnectedAddress = async () => {
+   // A Web3Provider wraps a standard Web3 provider, which is
+   // what Metamask injects as window.ethereum into each page
+   const provider = new ethers.providers.Web3Provider((window as any).ethereum)
+
+   // The Metamask plugin also allows signing transactions to
+   // send ether and pay to change state within the blockchain.
+   // For this, you need the account signer...
+   const signer = provider.getSigner()
+
+   const connectedAddress = await signer.getAddress()
+
+   return connectedAddress
 }
