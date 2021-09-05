@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "types": [
+      "jest",
+      "node"
+    ],
     "target": "es5",
     "lib": [
       "dom",
@@ -19,7 +23,7 @@
     "isolatedModules": true,
     "noImplicitAny": false,
     "noEmit": true,
-    "jsx": "react"
+    "jsx": "react-jsx"
   },
   "include": [
     "src"

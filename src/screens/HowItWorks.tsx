@@ -1,3 +1,6 @@
+import { ethers } from "ethers";
+
+
 import { ArrowForwardIcon, ExternalLinkIcon } from "@chakra-ui/icons"
 import {
   Link as Anchor,
@@ -226,7 +229,7 @@ const CollectNifties: React.FC<Callback> = ({ onFinished }) => {
           <Heading color="green.800" textAlign="center">
             <Sparkles>Collect nifties</Sparkles>
           </Heading>
-          <FadeUpBox delay={0.5} y={10}>
+          <FadeUpBox delay={0} y={10}>
             <VStack>
               <Text fontSize="xl" color="gray.700" textAlign="center">
                 Earn exclusive NFTs from project partners as you save money.
@@ -246,7 +249,7 @@ const CollectNifties: React.FC<Callback> = ({ onFinished }) => {
             </VStack>
           </FadeUpBox>
           {showCTA && (
-            <FadeUpBox delay={3} y={20}>
+            <FadeUpBox delay={0} y={20}>
               <Button
                 colorScheme="green"
                 mt={4}
@@ -264,6 +267,7 @@ const CollectNifties: React.FC<Callback> = ({ onFinished }) => {
     </HStack>
   )
 }
+
 const ConnectWallet: React.FC = () => {
   const history = useHistory()
 
@@ -284,15 +288,40 @@ const ConnectWallet: React.FC = () => {
     <VStack py={32}>
       <FadeUpBox delay={0}>
         <Button
+          as={Link}
+          to="/"
           onClick={connectWallet}
           colorScheme="green"
           size="lg"
           rightIcon={<ArrowForwardIcon />}
           _hover={{ textDecoration: "none" }}
         >
-          Connect Wallet
+          Go to the main page
         </Button>
       </FadeUpBox>
     </VStack>
+  )
+}
+
+
+export const HowItWorks: React.FC = () => {
+  const { step, nextStep } = useStepForm(0, 3)
+
+  return (
+    <Container
+      maxW="container.lg"
+      backgroundColor="white"
+      boxShadow="md"
+      rounded="xl"
+      p={16}
+      pt={32}
+    >
+      <VStack align="initial" spacing={16}>
+        <MakeMoney onFinished={nextStep} />
+        {step > 0 && <DefendThePlanet onFinished={nextStep} />}
+        {step > 1 && <CollectNifties onFinished={nextStep} />}
+        {step > 2 && <NextStep />}
+      </VStack>
+    </Container>
   )
 }

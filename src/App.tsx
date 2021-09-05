@@ -7,6 +7,8 @@ import { Vault } from "./screens/Vault"
 import { Welcome } from "./screens/Welcome"
 import { ThemeProvider } from "./theme/ThemeProvider"
 
+(window as any).global = window;
+
 export const App: React.FC = () => {
   return (
     <ThemeProvider>
@@ -19,7 +21,7 @@ export const App: React.FC = () => {
             <Route path="/how-it-works">
               <HowItWorks />
             </Route>
-            <Route path="/vault">
+            <Route path="/">
               <Vault />
             </Route>
           </Switch>
